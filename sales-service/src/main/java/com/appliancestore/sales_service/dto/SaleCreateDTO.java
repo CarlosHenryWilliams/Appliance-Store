@@ -5,14 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CartDTO {
+@Getter @Setter
+public class SaleCreateDTO {
     private Long idCart;
-    private List<InventoryUpdateDTO> productDTOList;
-    private Double totalPrice;
 }

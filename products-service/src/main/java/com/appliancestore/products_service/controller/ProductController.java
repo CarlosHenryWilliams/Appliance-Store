@@ -1,9 +1,8 @@
 package com.appliancestore.products_service.controller;
 
+import com.appliancestore.products_service.dto.InventoryUpdateDTO;
 import com.appliancestore.products_service.dto.ProductRequestDTO;
 import com.appliancestore.products_service.dto.ProductResponseDTO;
-import com.appliancestore.products_service.exception.ProductNotFoundException;
-import com.appliancestore.products_service.model.Product;
 import com.appliancestore.products_service.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,10 +49,10 @@ public class ProductController {
         return new ResponseEntity<String>("The product with the ID:" + idProduct + " has been deleted",HttpStatus.OK);
     }
 
-    @PatchMapping("/{idProduct}/{quantity}")
-    public ResponseEntity<String> substractProductQuantity(@PathVariable  Long idProduct, @PathVariable int quantity) {
-        produServ.substractProductQuantity(idProduct, quantity);
-        return new ResponseEntity<String>("The product with the ID:" + idProduct + " has been updated",HttpStatus.OK);
+    @PatchMapping("/subtract-stock")
+    public ResponseEntity<String> subtractProductQuantity(@RequestBody InventoryUpdateDTO inventoryUpdateDTO) {
+        produServ.subtractProductQuantity(inventoryUpdateDTO);
+        return new ResponseEntity<String>("The product with the ID:" + inventoryUpdateDTO.getIdProduct() + " has been updated",HttpStatus.OK);
 
     }
 }

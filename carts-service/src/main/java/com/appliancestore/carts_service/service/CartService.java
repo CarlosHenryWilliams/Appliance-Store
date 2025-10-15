@@ -8,7 +8,7 @@ import com.appliancestore.carts_service.mapper.CartMapper;
 import com.appliancestore.carts_service.model.Cart;
 import com.appliancestore.carts_service.model.Item;
 import com.appliancestore.carts_service.repository.ICartRepository;
-import com.appliancestore.carts_service.repository.IProductsAPI;
+import com.appliancestore.carts_service.repository.IProductAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,7 @@ public class CartService implements ICartService {
     private ICartRepository cartRepo;
 
     @Autowired
-    private IProductsAPI prodAPI;
+    private IProductAPI prodAPI;
 
     @Autowired
     private CartMapper cartMapper;

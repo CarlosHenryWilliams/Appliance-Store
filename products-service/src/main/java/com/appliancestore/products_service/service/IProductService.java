@@ -1,8 +1,8 @@
 package com.appliancestore.products_service.service;
 
+import com.appliancestore.products_service.dto.InventoryUpdateDTO;
 import com.appliancestore.products_service.dto.ProductRequestDTO;
 import com.appliancestore.products_service.dto.ProductResponseDTO;
-import com.appliancestore.products_service.model.Product;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public interface IProductService {
     // Delete
     public void deleteProduct(Long idProduct);
 
-    // Substract a quantity
-    public void substractProductQuantity(Long idProduct, int quantity);
+    // Subtract a quantity
+    public void subtractProductQuantity(InventoryUpdateDTO inventoryUpdateDTO);
 
 }

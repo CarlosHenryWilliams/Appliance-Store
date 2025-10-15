@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.List;
 
 @FeignClient(name = "products-service")
-public interface IProductsAPI {
+public interface IProductAPI {
     @GetMapping("/api/v1/products")
     List<ProductDTO> findAllProductsAPI();
 }

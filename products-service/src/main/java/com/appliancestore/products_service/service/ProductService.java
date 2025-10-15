@@ -1,7 +1,9 @@
 package com.appliancestore.products_service.service;
 
+import com.appliancestore.products_service.dto.InventoryUpdateDTO;
 import com.appliancestore.products_service.dto.ProductRequestDTO;
 import com.appliancestore.products_service.dto.ProductResponseDTO;
+import com.appliancestore.products_service.exception.InsufficientStockException;
 import com.appliancestore.products_service.exception.ProductNotFoundException;
 import com.appliancestore.products_service.mapper.ProductMapper;
 import com.appliancestore.products_service.model.Product;
@@ -63,10 +65,13 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void substractProductQuantity(Long idProduct, int quantity) {
-      Product productToUpdate =  produRepo.findById(idProduct)
-              .orElseThrow(() -> new ProductNotFoundException("The product with the ID: " + idProduct + " wasn't found."));
-      productToUpdate.setStock(productToUpdate.getStock() - quantity);
+    public void subtractProductQuantity(InventoryUpdateDTO inventoryUpdateDTO) {
+      Product productToUpdate =  produRepo.findById(inventoryUpdateDTO.getIdProduct())
+              .orElseThrow(() -> new ProductNotFoundException("The product with the ID: " + inventoryUpdateDTO.getIdProduct() + " wasn't found."));
+      if(productToUpdate.getStock() < inventoryUpdateDTO.getQuantity()){
+          throw new InsufficientStockException("The product with the ID: " + inventoryUpdateDTO.getIdProduct() + "has insufficient stock.");
+      }
+      productToUpdate.setStock(productToUpdate.getStock() - inventoryUpdateDTO.getQuantity());
       produRepo.save(productToUpdate);
     }
 }
