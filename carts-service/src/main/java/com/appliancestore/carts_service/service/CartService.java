@@ -12,6 +12,7 @@ import com.appliancestore.carts_service.repository.IProductAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,15 +63,27 @@ public class CartService implements ICartService {
         cartRepo.save(cart);
     }
 
+    private CartResponseDTO aggregateCartToDTO(Cart cart) {
+        List<ProductDetailsResponseDTO> productDetailsResponseDTOList = new ArrayList<>();
+        for(Item item: cart.getItems()){
+            // Call Products API
+            ProductDTO productDTO = prodAPI.findProductById(item.getIdProduct());
+            // Merge Product details to the productDetailsResponseDTO with CartMapper.
+            // ADD to the list
+            productDetailsResponseDTOList.add(cartMapper.mapProductToProductDetailsResponseDTO(productDTO, item.getQuantity()));
+        }
+        return cartMapper.mapCartToCartResponseDTO(cart, productDetailsResponseDTOList);
+    }
+
     @Override
     public List<CartResponseDTO> findAllCarts() {
-        return cartRepo.findAll().stream().map(cartMapper::mapCartToCartResponseDto).toList();
+        return cartRepo.findAll().stream().map(this::aggregateCartToDTO).toList();
     }
 
     @Override
     public CartResponseDTO findCartById(Long idCart) {
         Cart cart = cartRepo.findById(idCart).orElseThrow(() -> new CartNotFoundException("The cart with the ID:" + idCart + " wasn't found."));
-        return cartMapper.mapCartToCartResponseDto(cart);
+        return  aggregateCartToDTO(cart);
     }
 
     @Override
@@ -90,13 +103,13 @@ public class CartService implements ICartService {
         cartToEdit.getItems().clear(); // Remove items before adding new ones.
 
         // update a Cart from a CarRequestDTO
-        cartMapper.updateACartFromCartRequestDto(cartRequestDTO, cartToEdit);
+        cartMapper.updateACartFromCartRequestDTO(cartRequestDTO, cartToEdit);
 
         // Foreach for items.
         for (Item item : cartToEdit.getItems()) {
             item.setCart(cartToEdit); // assign a cart to each item
             if (!productsPriceMap.containsKey(item.getIdProduct())) { // if the key doesn't exist in the map
-                throw new ProductNotFoundException("The product with the ID:" +item.getIdProduct() + " wasn't found");
+                throw new ProductNotFoundException("The product with the ID:" + item.getIdProduct() + " wasn't found");
             }
             ProductInfoDTO productInfoDTOMap = productsPriceMap.get(item.getIdProduct()); // get the stock and price with a key (id) from a map (productsPriceMap)
             if (productInfoDTOMap.getStock() < item.getQuantity()) { // check sufficient stock.
@@ -109,7 +122,7 @@ public class CartService implements ICartService {
         cartRepo.save(cartToEdit); // Save changes.
 
         // Map a cart to a CartResponseDTO
-        return  cartMapper.mapCartToCartResponseDto(cartToEdit);
+        return  aggregateCartToDTO(cartToEdit);
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor @NoArgsConstructor
 public class CartResponseDTO {
     private Long idCart;
-    private List<ItemResponseDTO> items;
+  //  private List<ItemResponseDTO> items;
+    private List<ProductDetailsResponseDTO> productDetailsResponseDTOList;
     private Double totalPrice;
 }
