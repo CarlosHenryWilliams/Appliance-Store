@@ -8,18 +8,20 @@ import java.util.List;
 
 public interface IProductService {
     /*CRUD Methods
-    * */
+     * */
 
     // Create
     public void createProduct(ProductRequestDTO productRequestDTO);
 
     // Read
     public List<ProductResponseDTO> findAllProducts();
+
     public ProductResponseDTO findProductById(Long idProduct);
+
     public List<ProductResponseDTO> findProductsByIds(List<Long> idProductsList);
 
     // Update
-    public  ProductResponseDTO updateProduct(Long idProduct, ProductRequestDTO productRequestDTO);
+    public ProductResponseDTO updateProduct(Long idProduct, ProductRequestDTO productRequestDTO);
 
     // Delete
     public void deleteProduct(Long idProduct);
@@ -27,4 +29,6 @@ public interface IProductService {
     // Subtract a quantity
     public void subtractProductQuantity(InventoryUpdateDTO inventoryUpdateDTO);
 
+    // Add a quantity
+    public void addProductQuantity(InventoryUpdateDTO inventoryUpdateDTO);
 }

@@ -60,4 +60,11 @@ public class ProductController {
         return new ResponseEntity<String>("The product with the ID:" + inventoryUpdateDTO.getIdProduct() + " has been updated",HttpStatus.OK);
 
     }
+
+    @PutMapping("/add-stock")
+    public ResponseEntity<String> addProductQuantity(@RequestBody InventoryUpdateDTO inventoryUpdateDTO) {
+        produServ.addProductQuantity(inventoryUpdateDTO);
+        return new ResponseEntity<String>("The product with the ID:" + inventoryUpdateDTO.getIdProduct() + " has been updated",HttpStatus.OK);
+
+    }
 }

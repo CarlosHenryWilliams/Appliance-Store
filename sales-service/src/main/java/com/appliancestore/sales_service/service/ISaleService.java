@@ -1,6 +1,7 @@
 package com.appliancestore.sales_service.service;
 
 import com.appliancestore.sales_service.dto.SaleCreateDTO;
+import com.appliancestore.sales_service.dto.SaleResponseDTO;
 import com.appliancestore.sales_service.model.Sale;
 
 import java.util.List;
@@ -12,9 +13,9 @@ public interface ISaleService {
     public void createSale(SaleCreateDTO saleCreateDTO);
 
     // Read
-    public List<Sale> findAllSales();
+    public List<SaleResponseDTO> findAllSales();
 
-    public Sale findSaleById(Long idSale);
+    public SaleResponseDTO findSaleById(Long idSale);
 
     // Update
     public Sale updateSale(Long idSale, Sale sale);

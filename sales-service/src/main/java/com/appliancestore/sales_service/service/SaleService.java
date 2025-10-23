@@ -1,9 +1,8 @@
 package com.appliancestore.sales_service.service;
 
-import com.appliancestore.sales_service.dto.CartDTO;
-import com.appliancestore.sales_service.dto.InventoryUpdateDTO;
-import com.appliancestore.sales_service.dto.ProductDTO;
-import com.appliancestore.sales_service.dto.SaleCreateDTO;
+import com.appliancestore.sales_service.dto.*;
+import com.appliancestore.sales_service.exception.SaleNotFoundException;
+import com.appliancestore.sales_service.mapper.SaleMapper;
 import com.appliancestore.sales_service.model.Sale;
 import com.appliancestore.sales_service.repository.ICartAPI;
 import com.appliancestore.sales_service.repository.IProductAPI;
@@ -15,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class SaleService implements ISaleService{
+public class SaleService implements ISaleService {
 
     @Autowired
     private ISaleRepository saleRepo;
@@ -26,15 +25,20 @@ public class SaleService implements ISaleService{
     @Autowired
     private IProductAPI productAPI;
 
+    @Autowired
+    private SaleMapper saleMapper;
+
     @Override
     public void createSale(SaleCreateDTO saleCreateDTO) {
 
-        CartDTO cart = cartAPI.findCartById(saleCreateDTO.getIdCart()); // throw cart doesnt found.
+        CartDTO cart = cartAPI.findCartById(saleCreateDTO.getIdCart()); // throw cart wasn't found through feign.
 
 
-        for(ProductDTO produ : cart.getProductDetailsResponseDTOList()){
-           productAPI.subtractProductQuantity(new InventoryUpdateDTO(produ.getIdProduct(), produ.getQuantity()));
+        for (ProductDTO product : cart.getProductDetailsResponseDTOList()) {
+            // subtract a quantity to a product
+            productAPI.subtractProductQuantity(new InventoryUpdateDTO(product.getIdProduct(), product.getQuantity()));
         }
+
         Sale saleToCreate = new Sale();
         saleToCreate.setIdCart(cart.getIdCart()); // assign a cart to the sale
         saleToCreate.setTotalPrice(cart.getTotalPrice());
@@ -43,15 +47,22 @@ public class SaleService implements ISaleService{
         saleRepo.save(saleToCreate);
     }
 
-    @Override
-    public List<Sale> findAllSales() {
-        return saleRepo.findAll();
+
+    private SaleResponseDTO aggregateSaleToDTO(Sale sale) {
+        // Call to CARTAPI To get products
+        CartDTO cart = cartAPI.findCartById(sale.getIdCart());
+        return saleMapper.mapSaletoSaleResponseDTO(sale, cart.getProductDetailsResponseDTOList());
     }
 
     @Override
-    public Sale findSaleById(Long idSale) {
-        System.out.println(idSale);
-        return saleRepo.findById(idSale).orElse(null);
+    public List<SaleResponseDTO> findAllSales() {
+        return saleRepo.findAll().stream().map(this::aggregateSaleToDTO).toList();
+    }
+
+    @Override
+    public SaleResponseDTO findSaleById(Long idSale) {
+        Sale sale = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + "wasn't found."));
+        return this.aggregateSaleToDTO(sale);
     }
 
     @Override
@@ -61,6 +72,12 @@ public class SaleService implements ISaleService{
 
     @Override
     public void deleteSale(Long idSale) {
+        Sale sale = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + " wasn't found."));
+        CartDTO cart = cartAPI.findCartById(sale.getIdCart()); // throw cart wasn't found through feign.
+
+        for (ProductDTO productDTO : cart.getProductDetailsResponseDTOList()) {
+            productAPI.addProductQuantity(new InventoryUpdateDTO(productDTO.getIdProduct(),productDTO.getQuantity()));
+        }
         saleRepo.deleteById(idSale);
     }
 

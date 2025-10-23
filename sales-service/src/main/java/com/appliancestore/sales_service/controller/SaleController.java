@@ -1,6 +1,7 @@
 package com.appliancestore.sales_service.controller;
 
 import com.appliancestore.sales_service.dto.SaleCreateDTO;
+import com.appliancestore.sales_service.dto.SaleResponseDTO;
 import com.appliancestore.sales_service.model.Sale;
 import com.appliancestore.sales_service.service.ISaleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +25,13 @@ public class SaleController {
 
     // Read
     @GetMapping()
-    public ResponseEntity<List<Sale>> findAllSales() {
-        return new ResponseEntity<List<Sale>>(saleServ.findAllSales(), HttpStatus.OK);
+    public ResponseEntity<List<SaleResponseDTO>> findAllSales() {
+        return new ResponseEntity<List<SaleResponseDTO>>(saleServ.findAllSales(), HttpStatus.OK);
     }
 
     @GetMapping("/{idSale}")
-    public ResponseEntity<Sale> findSaleById(@PathVariable Long idSale) {
-        return new ResponseEntity<Sale>(saleServ.findSaleById(idSale), HttpStatus.OK);
+    public ResponseEntity<SaleResponseDTO> findSaleById(@PathVariable Long idSale) {
+        return new ResponseEntity<SaleResponseDTO>(saleServ.findSaleById(idSale), HttpStatus.OK);
     }
 
     // Update
@@ -43,6 +44,6 @@ public class SaleController {
     @DeleteMapping("/{idSale}")
     public ResponseEntity<String> deleteCart(@PathVariable Long idSale) {
         saleServ.deleteSale(idSale);
-        return new ResponseEntity<String>("The sale with the ID:" + idSale + "has been deleted.", HttpStatus.OK);
+        return new ResponseEntity<String>("The sale with the ID:" + idSale + " has been deleted.", HttpStatus.OK);
     }
 }

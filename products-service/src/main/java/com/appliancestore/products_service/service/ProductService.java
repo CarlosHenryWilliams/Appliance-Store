@@ -74,9 +74,17 @@ public class ProductService implements IProductService {
       Product productToUpdate =  produRepo.findById(inventoryUpdateDTO.getIdProduct())
               .orElseThrow(() -> new ProductNotFoundException("The product with the ID: " + inventoryUpdateDTO.getIdProduct() + " wasn't found."));
       if(productToUpdate.getStock() < inventoryUpdateDTO.getQuantity()){
-          throw new InsufficientStockException("The product with the ID: " + inventoryUpdateDTO.getIdProduct() + "has insufficient stock.");
+          throw new InsufficientStockException("The product with the ID: " + inventoryUpdateDTO.getIdProduct() + " has insufficient stock.");
       }
       productToUpdate.setStock(productToUpdate.getStock() - inventoryUpdateDTO.getQuantity());
       produRepo.save(productToUpdate);
+    }
+
+    @Override
+    public void addProductQuantity(InventoryUpdateDTO inventoryUpdateDTO) {
+        Product productToUpdate =  produRepo.findById(inventoryUpdateDTO.getIdProduct())
+                .orElseThrow(() -> new ProductNotFoundException("The product with the ID: " + inventoryUpdateDTO.getIdProduct() + " wasn't found."));
+        productToUpdate.setStock(productToUpdate.getStock() + inventoryUpdateDTO.getQuantity());
+        produRepo.save(productToUpdate);
     }
 }
