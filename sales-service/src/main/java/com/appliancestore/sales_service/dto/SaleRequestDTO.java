@@ -5,13 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SaleUpdateDTO {
-    private LocalDate saleDate;
+@Getter @Setter
+public class SaleRequestDTO {
     private Long idCart;
 }

@@ -29,9 +29,9 @@ public class SaleService implements ISaleService {
     private SaleMapper saleMapper;
 
     @Override
-    public void createSale(SaleCreateDTO saleCreateDTO) {
+    public void createSale(SaleRequestDTO saleRequestDTO) {
 
-        CartDTO cart = cartAPI.findCartById(saleCreateDTO.getIdCart()); // throw cart wasn't found through feign.
+        CartDTO cart = cartAPI.findCartById(saleRequestDTO.getIdCart()); // throw cart wasn't found through feign.
 
 
         for (ProductDTO product : cart.getProductDetailsResponseDTOList()) {
@@ -61,13 +61,33 @@ public class SaleService implements ISaleService {
 
     @Override
     public SaleResponseDTO findSaleById(Long idSale) {
-        Sale sale = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + "wasn't found."));
+        Sale sale = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + " wasn't found."));
         return this.aggregateSaleToDTO(sale);
     }
 
     @Override
-    public Sale updateSale(Long idSale, Sale sale) {
-        return null;
+    public SaleResponseDTO updateSale(Long idSale, SaleRequestDTO saleRequestDTO) {
+        Sale saleToUpdate = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + " wasn't found."));
+
+        // old Cart
+        CartDTO oldCartDTO = cartAPI.findCartById(saleToUpdate.getIdCart());
+        // new Cart
+        CartDTO newCartDTO = cartAPI.findCartById(saleRequestDTO.getIdCart());
+
+        // old Cart I add the quantity to a product (Inventory Reversal)
+        for(ProductDTO product : oldCartDTO.getProductDetailsResponseDTOList()){
+            productAPI.addProductQuantity(new InventoryUpdateDTO(product.getIdProduct(), product.getQuantity()));
+        }
+
+        for(ProductDTO product : newCartDTO.getProductDetailsResponseDTOList()){
+            productAPI.subtractProductQuantity(new InventoryUpdateDTO(product.getIdProduct(), product.getQuantity()));
+        }
+
+        saleToUpdate.setIdCart(newCartDTO.getIdCart());
+        saleToUpdate.setTotalPrice(newCartDTO.getTotalPrice());
+
+        saleRepo.save(saleToUpdate);
+        return this.aggregateSaleToDTO(saleToUpdate);
     }
 
     @Override

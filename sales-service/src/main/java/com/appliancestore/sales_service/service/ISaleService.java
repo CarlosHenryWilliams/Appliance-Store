@@ -1,6 +1,6 @@
 package com.appliancestore.sales_service.service;
 
-import com.appliancestore.sales_service.dto.SaleCreateDTO;
+import com.appliancestore.sales_service.dto.SaleRequestDTO;
 import com.appliancestore.sales_service.dto.SaleResponseDTO;
 import com.appliancestore.sales_service.model.Sale;
 
@@ -10,7 +10,7 @@ public interface ISaleService {
     /*CRUD Methods */
 
     // Create
-    public void createSale(SaleCreateDTO saleCreateDTO);
+    public void createSale(SaleRequestDTO saleRequestDTO);
 
     // Read
     public List<SaleResponseDTO> findAllSales();
@@ -18,7 +18,7 @@ public interface ISaleService {
     public SaleResponseDTO findSaleById(Long idSale);
 
     // Update
-    public Sale updateSale(Long idSale, Sale sale);
+    public SaleResponseDTO updateSale(Long idSale, SaleRequestDTO saleRequestDTO);
 
     // Delete
     public void deleteSale(Long idSale);

@@ -1,6 +1,6 @@
 package com.appliancestore.sales_service.controller;
 
-import com.appliancestore.sales_service.dto.SaleCreateDTO;
+import com.appliancestore.sales_service.dto.SaleRequestDTO;
 import com.appliancestore.sales_service.dto.SaleResponseDTO;
 import com.appliancestore.sales_service.model.Sale;
 import com.appliancestore.sales_service.service.ISaleService;
@@ -18,8 +18,8 @@ public class SaleController {
     private ISaleService saleServ;
 
     @PostMapping()
-    public ResponseEntity<String> createSale(@RequestBody SaleCreateDTO saleCreateDTO) {
-        saleServ.createSale(saleCreateDTO);
+    public ResponseEntity<String> createSale(@RequestBody SaleRequestDTO saleRequestDTO) {
+        saleServ.createSale(saleRequestDTO);
         return new ResponseEntity<String>("The sale has been created", HttpStatus.CREATED);
     }
 
@@ -36,8 +36,8 @@ public class SaleController {
 
     // Update
     @PutMapping("/{idSale}")
-    public ResponseEntity<Sale> updateSale(@PathVariable Long idSale, @RequestBody Sale sale) {
-        return new ResponseEntity<Sale>(saleServ.updateSale(idSale, sale), HttpStatus.OK);
+    public ResponseEntity<SaleResponseDTO> updateSale(@PathVariable Long idSale, @RequestBody SaleRequestDTO saleRequestDTO) {
+        return new ResponseEntity<SaleResponseDTO>(saleServ.updateSale(idSale, saleRequestDTO), HttpStatus.OK);
     }
 
     // Delete
