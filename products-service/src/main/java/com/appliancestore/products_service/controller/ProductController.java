@@ -31,6 +31,11 @@ public class ProductController {
         return new ResponseEntity<List<ProductResponseDTO>>(produServ.findAllProducts(),HttpStatus.OK);
     }
 
+    @PostMapping("/by-ids")
+    public ResponseEntity<List<ProductResponseDTO>> findAllProductsByIds(@RequestBody List<Long> idProductsList){
+        return new ResponseEntity<List<ProductResponseDTO>>(produServ.findProductsByIds(idProductsList),HttpStatus.OK);
+    }
+
     @GetMapping("/{idProduct}")
     public ResponseEntity<ProductResponseDTO> findProductById(@PathVariable  Long idProduct){
         return new ResponseEntity<ProductResponseDTO>(produServ.findProductById(idProduct),HttpStatus.OK);
@@ -49,7 +54,7 @@ public class ProductController {
         return new ResponseEntity<String>("The product with the ID:" + idProduct + " has been deleted",HttpStatus.OK);
     }
 
-    @PatchMapping("/subtract-stock")
+    @PutMapping("/subtract-stock")
     public ResponseEntity<String> subtractProductQuantity(@RequestBody InventoryUpdateDTO inventoryUpdateDTO) {
         produServ.subtractProductQuantity(inventoryUpdateDTO);
         return new ResponseEntity<String>("The product with the ID:" + inventoryUpdateDTO.getIdProduct() + " has been updated",HttpStatus.OK);

@@ -14,8 +14,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<String> handleInsufficientProductStock(ProductNotFoundException ex){
-        return new ResponseEntity<String>(ex.getMessage(), HttpStatus.CONFLICT);
+    public ResponseEntity<String> handleProductNotFound(ProductNotFoundException ex){
+        return new ResponseEntity<String>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(CartNotFoundException.class)

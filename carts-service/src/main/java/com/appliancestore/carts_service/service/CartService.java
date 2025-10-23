@@ -32,27 +32,29 @@ public class CartService implements ICartService {
 
     @Override
     public void createCart(CartRequestDTO cartRequestDTO) {
-        double totalPrice = 0D;
-        // Products API
-        List<ProductDTO> allProducts = prodAPI.findAllProductsAPI();
-        // Create a map with a key (ID) and a new DTO ProductInfoDTO with the price and the stock.
-        Map<Long, ProductInfoDTO> productsPriceMap = allProducts.stream()
-                .collect(Collectors.toMap(
-                        ProductDTO::getIdProduct,
-                        p -> new ProductInfoDTO(p.getPrice(), p.getStock())
-                ));
-
         // Map a CartRequestDto to a Cart
         Cart cart = cartMapper.mapCartRequestDtoToCart(cartRequestDTO);
+        List<Long> productsCartIds = cart.getItems().stream().map(Item::getIdProduct).toList();
+
+        // Products API
+        List<ProductDTO> allProducts = prodAPI.findAllProductsByIds(productsCartIds);
+
+        // Create a map with a key (ID) and a new DTO ProductInfoDTO with the price and the stock.
+        Map<Long, ProductInfoDTO> productsDetailsMap = allProducts.stream()
+                .collect(Collectors.toMap(
+                        ProductDTO::getIdProduct, // Product DTO because it has the id.
+                        p -> new ProductInfoDTO(p.getPrice(), p.getStock())
+                ));
+       double totalPrice = 0D;
 
         // Foreach for items.
         for (Item item : cart.getItems()) {
-            if (!productsPriceMap.containsKey(item.getIdProduct())) { // if the key doesn't exist in the map
+            if (!productsDetailsMap.containsKey(item.getIdProduct())) { // if the key doesn't exist in the map
                 throw new ProductNotFoundException("The product with the ID:" + item.getIdProduct() + " wasn't found.");
             }
 
             item.setCart(cart); // assign a cart to each item
-            ProductInfoDTO productInfoDTOMap = productsPriceMap.get(item.getIdProduct()); // get the stock and price with a key (id)
+            ProductInfoDTO productInfoDTOMap = productsDetailsMap.get(item.getIdProduct()); // get the stock and price with a key (id)
             if (productInfoDTOMap.getStock() < item.getQuantity()) { // check sufficient stock.
                 throw new InsufficientProductStockException("The product with the ID: " + item.getIdProduct() + " has insufficient stock.");
             }
@@ -88,30 +90,35 @@ public class CartService implements ICartService {
 
     @Override
     public CartResponseDTO updateCart(Long idCart, CartRequestDTO cartRequestDTO) {
+
+        // Find a cart to edit
         Cart cartToEdit = cartRepo.findById(idCart).orElseThrow(() -> new CartNotFoundException("The cart with the ID:" + idCart + " wasn't found."));
-        double totalPrice = 0D;
+
+        cartToEdit.getItems().clear(); // Remove items before adding new ones.
+
+        // update a Cart from a CartRequestDTO
+        cartMapper.updateACartFromCartRequestDTO(cartRequestDTO, cartToEdit);
+
+        List<Long> productsCartIds = cartToEdit.getItems().stream().map(Item::getIdProduct).toList();
 
         // Products API
-        List<ProductDTO> allProducts = prodAPI.findAllProductsAPI();
+        List<ProductDTO> allProductsAPI = prodAPI.findAllProductsByIds(productsCartIds);
+
         // Create a map with a key (ID) and a new DTO ProductInfoDTO with the price and the stock.
-        Map<Long, ProductInfoDTO> productsPriceMap = allProducts.stream()
+        Map<Long, ProductInfoDTO> productDetailsMap = allProductsAPI.stream()
                 .collect(Collectors.toMap(
                         ProductDTO::getIdProduct,
                         p -> new ProductInfoDTO(p.getPrice(), p.getStock())
                 ));
 
-        cartToEdit.getItems().clear(); // Remove items before adding new ones.
-
-        // update a Cart from a CarRequestDTO
-        cartMapper.updateACartFromCartRequestDTO(cartRequestDTO, cartToEdit);
-
+        double totalPrice = 0D;
         // Foreach for items.
         for (Item item : cartToEdit.getItems()) {
             item.setCart(cartToEdit); // assign a cart to each item
-            if (!productsPriceMap.containsKey(item.getIdProduct())) { // if the key doesn't exist in the map
+            if (!productDetailsMap.containsKey(item.getIdProduct())) { // if the key doesn't exist in the map
                 throw new ProductNotFoundException("The product with the ID:" + item.getIdProduct() + " wasn't found");
             }
-            ProductInfoDTO productInfoDTOMap = productsPriceMap.get(item.getIdProduct()); // get the stock and price with a key (id) from a map (productsPriceMap)
+            ProductInfoDTO productInfoDTOMap = productDetailsMap.get(item.getIdProduct()); // get the stock and price with a key (id) from a map (productDetailsMap)
             if (productInfoDTOMap.getStock() < item.getQuantity()) { // check sufficient stock.
                 throw new InsufficientProductStockException("The product with the ID: " + item.getIdProduct() + " has insufficient stock.");
             }

@@ -45,6 +45,11 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public List<ProductResponseDTO> findProductsByIds(List<Long> idProductsList) {
+        return produRepo.findAllById(idProductsList).stream().map(productMapper::mapProductToDtoResponse).toList();
+    }
+
+    @Override
     public ProductResponseDTO updateProduct(Long idProduct, ProductRequestDTO productRequestDTO) {
 
         // Find the product

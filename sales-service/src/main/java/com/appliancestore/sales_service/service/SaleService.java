@@ -2,6 +2,7 @@ package com.appliancestore.sales_service.service;
 
 import com.appliancestore.sales_service.dto.CartDTO;
 import com.appliancestore.sales_service.dto.InventoryUpdateDTO;
+import com.appliancestore.sales_service.dto.ProductDTO;
 import com.appliancestore.sales_service.dto.SaleCreateDTO;
 import com.appliancestore.sales_service.model.Sale;
 import com.appliancestore.sales_service.repository.ICartAPI;
@@ -27,17 +28,17 @@ public class SaleService implements ISaleService{
 
     @Override
     public void createSale(SaleCreateDTO saleCreateDTO) {
+
         CartDTO cart = cartAPI.findCartById(saleCreateDTO.getIdCart()); // throw cart doesnt found.
+
+
+        for(ProductDTO produ : cart.getProductDetailsResponseDTOList()){
+           productAPI.subtractProductQuantity(new InventoryUpdateDTO(produ.getIdProduct(), produ.getQuantity()));
+        }
         Sale saleToCreate = new Sale();
         saleToCreate.setIdCart(cart.getIdCart()); // assign a cart to the sale
-        System.out.println("TotalPrice" + cart.getTotalPrice());
         saleToCreate.setTotalPrice(cart.getTotalPrice());
         saleToCreate.setSaleDate(LocalDate.now()); // Current date.
-
-        System.out.println(cart.getProductDTOList());
-        for(InventoryUpdateDTO inven : cart.getProductDTOList()){
-            productAPI.subtractProductQuantity(new InventoryUpdateDTO(inven.getIdProduct(), inven.getQuantity()));
-        }
 
         saleRepo.save(saleToCreate);
     }
@@ -49,6 +50,7 @@ public class SaleService implements ISaleService{
 
     @Override
     public Sale findSaleById(Long idSale) {
+        System.out.println(idSale);
         return saleRepo.findById(idSale).orElse(null);
     }
 

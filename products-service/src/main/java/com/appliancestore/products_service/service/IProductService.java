@@ -16,6 +16,7 @@ public interface IProductService {
     // Read
     public List<ProductResponseDTO> findAllProducts();
     public ProductResponseDTO findProductById(Long idProduct);
+    public List<ProductResponseDTO> findProductsByIds(List<Long> idProductsList);
 
     // Update
     public  ProductResponseDTO updateProduct(Long idProduct, ProductRequestDTO productRequestDTO);
