@@ -5,6 +5,7 @@ import com.appliancestore.products_service.dto.ProductRequestDTO;
 import com.appliancestore.products_service.dto.ProductResponseDTO;
 import com.appliancestore.products_service.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +19,13 @@ public class ProductController {
     @Autowired
     private IProductService produServ;
 
+    @Value("${server.port}")
+    private int serverPort; // test ServerPort
+
     // Create
     @PostMapping()
     public ResponseEntity<String> createProduct(@RequestBody ProductRequestDTO productRequestDTO){
+        //System.out.println("serverPort: "+ serverPort); // test ServerPort
         produServ.createProduct(productRequestDTO);
         return new ResponseEntity<String>("The product has been created", HttpStatus.CREATED);
     }
@@ -28,16 +33,19 @@ public class ProductController {
     // Read
     @GetMapping()
     public ResponseEntity<List<ProductResponseDTO>> findAllProducts(){
+        //System.out.println("serverPort: "+ serverPort); // test ServerPort
         return new ResponseEntity<List<ProductResponseDTO>>(produServ.findAllProducts(),HttpStatus.OK);
     }
 
     @PostMapping("/by-ids")
     public ResponseEntity<List<ProductResponseDTO>> findAllProductsByIds(@RequestBody List<Long> idProductsList){
+        //System.out.println("serverPort: "+ serverPort); // test ServerPort
         return new ResponseEntity<List<ProductResponseDTO>>(produServ.findProductsByIds(idProductsList),HttpStatus.OK);
     }
 
     @GetMapping("/{idProduct}")
     public ResponseEntity<ProductResponseDTO> findProductById(@PathVariable  Long idProduct){
+        //System.out.println("serverPort: "+ serverPort); // test ServerPort
         return new ResponseEntity<ProductResponseDTO>(produServ.findProductById(idProduct),HttpStatus.OK);
     }
 
@@ -58,7 +66,6 @@ public class ProductController {
     public ResponseEntity<String> subtractProductQuantity(@RequestBody InventoryUpdateDTO inventoryUpdateDTO) {
         produServ.subtractProductQuantity(inventoryUpdateDTO);
         return new ResponseEntity<String>("The product with the ID:" + inventoryUpdateDTO.getIdProduct() + " has been updated",HttpStatus.OK);
-
     }
 
     @PutMapping("/add-stock")

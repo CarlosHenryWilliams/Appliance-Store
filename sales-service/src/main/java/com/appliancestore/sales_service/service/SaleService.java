@@ -74,7 +74,7 @@ public class SaleService implements ISaleService {
         // new Cart
         CartDTO newCartDTO = cartAPI.findCartById(saleRequestDTO.getIdCart());
 
-        // old Cart I add the quantity to a product (Inventory Reversal)
+        // old Cart, add the quantity to a product (Inventory Reversal)
         for(ProductDTO product : oldCartDTO.getProductDetailsResponseDTOList()){
             productAPI.addProductQuantity(new InventoryUpdateDTO(product.getIdProduct(), product.getQuantity()));
         }
@@ -95,11 +95,11 @@ public class SaleService implements ISaleService {
         Sale sale = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + " wasn't found."));
         CartDTO cart = cartAPI.findCartById(sale.getIdCart()); // throw cart wasn't found through feign.
 
+        // Add quantity to products  (Old sale)
         for (ProductDTO productDTO : cart.getProductDetailsResponseDTOList()) {
             productAPI.addProductQuantity(new InventoryUpdateDTO(productDTO.getIdProduct(),productDTO.getQuantity()));
         }
         saleRepo.deleteById(idSale);
     }
-
 
 }
