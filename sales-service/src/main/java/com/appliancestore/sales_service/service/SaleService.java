@@ -7,10 +7,12 @@ import com.appliancestore.sales_service.model.Sale;
 import com.appliancestore.sales_service.repository.ICartAPI;
 import com.appliancestore.sales_service.repository.IProductAPI;
 import com.appliancestore.sales_service.repository.ISaleRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -55,20 +57,37 @@ public class SaleService implements ISaleService {
     }
 
     @Override
+    @CircuitBreaker(name="carts-service", fallbackMethod="fallbackGetSales")
     public List<SaleResponseDTO> findAllSales() {
         return saleRepo.findAll().stream().map(this::aggregateSaleToDTO).toList();
     }
 
     @Override
+    @CircuitBreaker(name="carts-service", fallbackMethod="fallbackGetSale")
     public SaleResponseDTO findSaleById(Long idSale) {
         Sale sale = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + " wasn't found."));
         return this.aggregateSaleToDTO(sale);
     }
 
+    // FallBack Methods
+    public SaleResponseDTO fallbackGetSale(Throwable throwable){
+        return new SaleResponseDTO(0L,null,0D,0L,null);
+    }
+
+    public List<SaleResponseDTO> fallbackGetSales(Throwable throwable){
+        List<SaleResponseDTO> emptyList = new ArrayList<>();
+        SaleResponseDTO defaultSaleResponse = new SaleResponseDTO(0L,null,0D,0L,null);
+        emptyList.add(defaultSaleResponse);
+        return emptyList;
+    }
+    public void createException(){
+        throw new IllegalArgumentException("Prueba Resillience y circuit breaker");
+    }
+
+
     @Override
     public SaleResponseDTO updateSale(Long idSale, SaleRequestDTO saleRequestDTO) {
         Sale saleToUpdate = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + " wasn't found."));
-
         // old Cart
         CartDTO oldCartDTO = cartAPI.findCartById(saleToUpdate.getIdCart());
         // new Cart
