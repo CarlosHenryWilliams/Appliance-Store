@@ -14,7 +14,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleFeignNotFound(FeignException.NotFound ex) {
         // Extract the relevant part of the message (For example: The cart with the ID: 6 wasn't found.) using contentUTF8
         String errorMessage = "Resource Not Found during microservice call: " + ex.contentUTF8();
-        return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND); // CODE 404
     }
 
     // Handler for the 409 (Conflict) error coming from a Feign Client
@@ -28,6 +28,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SaleNotFoundException.class)
     public ResponseEntity<String> handleSaleNotFoundException(SaleNotFoundException ex){
-        return new ResponseEntity<String>(ex.getMessage(),HttpStatus.NOT_FOUND);
+        return new ResponseEntity<String>(ex.getMessage(),HttpStatus.NOT_FOUND); // CODE 404
     }
+    // CartService Unavailable
+    @ExceptionHandler(CartServiceUnavailableException.class)
+    public ResponseEntity<String> handleCartServiceUnavailableException(CartServiceUnavailableException ex){
+        return new ResponseEntity<String>(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE); // CODE 503
+    }
+    // CartService Unavailable
+    @ExceptionHandler(ProductServiceUnavailableException.class)
+    public ResponseEntity<String> handleProductServiceUnavailableException(ProductServiceUnavailableException ex){
+        return new ResponseEntity<String>(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE); // CODE 503
+    }
+
 }

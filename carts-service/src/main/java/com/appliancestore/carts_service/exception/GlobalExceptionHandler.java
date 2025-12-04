@@ -22,4 +22,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleCartNotFoundException(CartNotFoundException ex){
         return new ResponseEntity<String>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(ProductServiceUnavailableException.class)
+    public ResponseEntity<String> handleProductServiceUnavailableException(ProductServiceUnavailableException ex){
+        return new ResponseEntity<String>(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+    }
 }

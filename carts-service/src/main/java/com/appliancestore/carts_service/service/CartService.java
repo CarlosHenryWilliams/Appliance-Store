@@ -9,6 +9,7 @@ import com.appliancestore.carts_service.model.Cart;
 import com.appliancestore.carts_service.model.Item;
 import com.appliancestore.carts_service.repository.ICartRepository;
 import com.appliancestore.carts_service.repository.IProductAPI;
+import com.appliancestore.carts_service.service.integration.ProductIntegrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,7 @@ public class CartService implements ICartService {
     private ICartRepository cartRepo;
 
     @Autowired
-    private IProductAPI prodAPI;
+    private ProductIntegrationService productIntegration;
 
     @Autowired
     private CartMapper cartMapper;
@@ -37,7 +38,7 @@ public class CartService implements ICartService {
         List<Long> productsCartIds = cart.getItems().stream().map(Item::getIdProduct).toList();
 
         // Products API
-        List<ProductDTO> allProducts = prodAPI.findAllProductsByIds(productsCartIds);
+        List<ProductDTO> allProducts = productIntegration.findAllProductsByIds(productsCartIds);
 
         // Create a map with a key (ID) and a new DTO ProductInfoDTO with the price and the stock.
         Map<Long, ProductInfoDTO> productsDetailsMap = allProducts.stream()
@@ -66,14 +67,11 @@ public class CartService implements ICartService {
     }
 
     private CartResponseDTO aggregateCartToDTO(Cart cart) {
-        List<ProductDetailsResponseDTO> productDetailsResponseDTOList = new ArrayList<>();
-        for(Item item: cart.getItems()){
-            // Call Products API
-            ProductDTO productDTO = prodAPI.findProductById(item.getIdProduct());
-            // Merge Product details to the productDetailsResponseDTO with CartMapper.
-            // ADD to the list
-            productDetailsResponseDTOList.add(cartMapper.mapProductToProductDetailsResponseDTO(productDTO, item.getQuantity()));
-        }
+
+        List<Long> productsIds = cart.getItems().stream().map(Item::getIdProduct).toList();
+        List<ProductDTO> allProducts = productIntegration.findAllProductsByIds(productsIds);
+        List<ProductDetailsResponseDTO> productDetailsResponseDTOList = cartMapper.mapProductsToProductDetailsResponseDTOList(allProducts,cart.getItems());
+
         return cartMapper.mapCartToCartResponseDTO(cart, productDetailsResponseDTOList);
     }
 
@@ -102,7 +100,7 @@ public class CartService implements ICartService {
         List<Long> productsCartIds = cartToEdit.getItems().stream().map(Item::getIdProduct).toList();
 
         // Products API
-        List<ProductDTO> allProductsAPI = prodAPI.findAllProductsByIds(productsCartIds);
+        List<ProductDTO> allProductsAPI = productIntegration.findAllProductsByIds(productsCartIds);
 
         // Create a map with a key (ID) and a new DTO ProductInfoDTO with the price and the stock.
         Map<Long, ProductInfoDTO> productDetailsMap = allProductsAPI.stream()

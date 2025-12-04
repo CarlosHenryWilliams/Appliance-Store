@@ -1,9 +1,11 @@
 package com.appliancestore.sales_service.service;
 
+import com.appliancestore.sales_service.dto.CartDTO;
 import com.appliancestore.sales_service.dto.SaleRequestDTO;
 import com.appliancestore.sales_service.dto.SaleResponseDTO;
 import com.appliancestore.sales_service.model.Sale;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface ISaleService {
@@ -22,4 +24,7 @@ public interface ISaleService {
 
     // Delete
     public void deleteSale(Long idSale);
+
+
+
 }

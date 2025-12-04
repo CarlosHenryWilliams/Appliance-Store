@@ -1,12 +1,16 @@
 package com.appliancestore.sales_service.service;
 
 import com.appliancestore.sales_service.dto.*;
+import com.appliancestore.sales_service.exception.CartServiceUnavailableException;
+import com.appliancestore.sales_service.exception.ProductServiceUnavailableException;
 import com.appliancestore.sales_service.exception.SaleNotFoundException;
 import com.appliancestore.sales_service.mapper.SaleMapper;
 import com.appliancestore.sales_service.model.Sale;
 import com.appliancestore.sales_service.repository.ICartAPI;
 import com.appliancestore.sales_service.repository.IProductAPI;
 import com.appliancestore.sales_service.repository.ISaleRepository;
+import com.appliancestore.sales_service.service.integration.CartIntegrationService;
+import com.appliancestore.sales_service.service.integration.ProductIntegrationService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,24 +26,31 @@ public class SaleService implements ISaleService {
     private ISaleRepository saleRepo;
 
     @Autowired
-    private ICartAPI cartAPI;
+    private CartIntegrationService cartIntegration;
 
     @Autowired
-    private IProductAPI productAPI;
+    private ProductIntegrationService productIntegration;
 
     @Autowired
     private SaleMapper saleMapper;
 
+
+   // @CircuitBreaker(name="carts-service", fallbackMethod="fallbackFindCartById")
+   /* public CartDTO findCartById(Long idCart){
+        return cartIntegration.findCartById(idCart); // throw cart wasn't found through feign.
+    }*/
+    /*public CartDTO fallbackFindCartById(Long idCart){
+        throw new CartServiceUnavailableException("Cart Service Unavailable, Cart not found");
+    }*/
+
     @Override
+    //@CircuitBreaker(name="carts-service", fallbackMethod="fallbackCreateSale")
     public void createSale(SaleRequestDTO saleRequestDTO) {
+        CartDTO cart = cartIntegration.findCartById(saleRequestDTO.getIdCart());
+       //CartDTO cart = cartAPI.findCartById(saleRequestDTO.getIdCart()); // throw cart wasn't found through feign.
 
-        CartDTO cart = cartAPI.findCartById(saleRequestDTO.getIdCart()); // throw cart wasn't found through feign.
-
-
-        for (ProductDTO product : cart.getProductDetailsResponseDTOList()) {
-            // subtract a quantity to a product
-            productAPI.subtractProductQuantity(new InventoryUpdateDTO(product.getIdProduct(), product.getQuantity()));
-        }
+        // Subtract a quantity to a product.
+        productIntegration.subtractProductQuantity(cart);
 
         Sale saleToCreate = new Sale();
         saleToCreate.setIdCart(cart.getIdCart()); // assign a cart to the sale
@@ -49,10 +60,13 @@ public class SaleService implements ISaleService {
         saleRepo.save(saleToCreate);
     }
 
+    public void fallbackCreateSale(SaleRequestDTO saleRequestDTO, Throwable t) {
+        throw new CartServiceUnavailableException("Cart Service Unavailable");
+    }
 
     private SaleResponseDTO aggregateSaleToDTO(Sale sale) {
         // Call to CARTAPI To get products
-        CartDTO cart = cartAPI.findCartById(sale.getIdCart());
+        CartDTO cart = cartIntegration.findCartById(sale.getIdCart());
         return saleMapper.mapSaletoSaleResponseDTO(sale, cart.getProductDetailsResponseDTOList());
     }
 
@@ -80,6 +94,7 @@ public class SaleService implements ISaleService {
         emptyList.add(defaultSaleResponse);
         return emptyList;
     }
+
     public void createException(){
         throw new IllegalArgumentException("Prueba Resillience y circuit breaker");
     }
@@ -89,18 +104,15 @@ public class SaleService implements ISaleService {
     public SaleResponseDTO updateSale(Long idSale, SaleRequestDTO saleRequestDTO) {
         Sale saleToUpdate = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + " wasn't found."));
         // old Cart
-        CartDTO oldCartDTO = cartAPI.findCartById(saleToUpdate.getIdCart());
+        CartDTO oldCartDTO = cartIntegration.findCartById(saleToUpdate.getIdCart());
         // new Cart
-        CartDTO newCartDTO = cartAPI.findCartById(saleRequestDTO.getIdCart());
+        CartDTO newCartDTO = cartIntegration.findCartById(saleRequestDTO.getIdCart());
 
         // old Cart, add the quantity to a product (Inventory Reversal)
-        for(ProductDTO product : oldCartDTO.getProductDetailsResponseDTOList()){
-            productAPI.addProductQuantity(new InventoryUpdateDTO(product.getIdProduct(), product.getQuantity()));
-        }
+        productIntegration.addProductQuantity(oldCartDTO);
 
-        for(ProductDTO product : newCartDTO.getProductDetailsResponseDTOList()){
-            productAPI.subtractProductQuantity(new InventoryUpdateDTO(product.getIdProduct(), product.getQuantity()));
-        }
+        // subtract a quantity to a product.
+        productIntegration.subtractProductQuantity(newCartDTO);
 
         saleToUpdate.setIdCart(newCartDTO.getIdCart());
         saleToUpdate.setTotalPrice(newCartDTO.getTotalPrice());
@@ -112,13 +124,14 @@ public class SaleService implements ISaleService {
     @Override
     public void deleteSale(Long idSale) {
         Sale sale = saleRepo.findById(idSale).orElseThrow(() -> new SaleNotFoundException("The sale with the ID: " + idSale + " wasn't found."));
-        CartDTO cart = cartAPI.findCartById(sale.getIdCart()); // throw cart wasn't found through feign.
+        CartDTO cart = cartIntegration.findCartById(sale.getIdCart()); // throw cart wasn't found through feign.
 
-        // Add quantity to products  (Old sale)
-        for (ProductDTO productDTO : cart.getProductDetailsResponseDTOList()) {
-            productAPI.addProductQuantity(new InventoryUpdateDTO(productDTO.getIdProduct(),productDTO.getQuantity()));
-        }
+        // Add quantity to products  (Old sale) Reversal Inventory.
+        productIntegration.addProductQuantity(cart);
         saleRepo.deleteById(idSale);
     }
+
+
+
 
 }
