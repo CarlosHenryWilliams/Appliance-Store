@@ -36,8 +36,8 @@ public class SaleController {
 
     // Update
     @PutMapping("/{idSale}")
-    public ResponseEntity<SaleResponseDTO> updateSale(@PathVariable Long idSale, @RequestBody SaleRequestDTO saleRequestDTO) {
-        return new ResponseEntity<SaleResponseDTO>(saleServ.updateSale(idSale, saleRequestDTO), HttpStatus.OK);
+    public ResponseEntity<String> updateSale(@PathVariable Long idSale, @RequestBody SaleRequestDTO saleRequestDTO) {
+        return new ResponseEntity<String>("A sale cannot be updated.", HttpStatus.BAD_REQUEST);
     }
 
     // Delete

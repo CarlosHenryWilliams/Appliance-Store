@@ -25,7 +25,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
     }
 
-
     @ExceptionHandler(SaleNotFoundException.class)
     public ResponseEntity<String> handleSaleNotFoundException(SaleNotFoundException ex){
         return new ResponseEntity<String>(ex.getMessage(),HttpStatus.NOT_FOUND); // CODE 404
@@ -39,6 +38,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ProductServiceUnavailableException.class)
     public ResponseEntity<String> handleProductServiceUnavailableException(ProductServiceUnavailableException ex){
         return new ResponseEntity<String>(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE); // CODE 503
+    }
+
+    @ExceptionHandler(ProductInsufficientStockException.class)
+    public ResponseEntity<String> handleProductInsufficientStockException(ProductInsufficientStockException ex){
+        return new ResponseEntity<String>(ex.getMessage(), HttpStatus.CONFLICT); // CODE 409
     }
 
 }

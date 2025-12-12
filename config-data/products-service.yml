@@ -1,0 +1,18 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: products-service
+  datasource:
+    username: root
+    password: "" # Comillas vacías explícitas para indicar contraseña en blanco
+    url: jdbc:mysql://localhost:3306/products_service?serverTimezone=UTC
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka

@@ -8,7 +8,6 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -16,8 +15,8 @@ public class ProductIntegrationService {
     @Autowired
     private IProductAPI productAPI;
 
-    @CircuitBreaker(name = "products-service", fallbackMethod = "fallbackFindAllProductsByIds")
     @Retry(name = "products-service")
+    @CircuitBreaker(name = "products-service", fallbackMethod = "fallbackFindAllProductsByIds")
     public List<ProductDTO> findAllProductsByIds(List<Long> arrayIds){
       return productAPI.findAllProductsByIds(arrayIds);
     }

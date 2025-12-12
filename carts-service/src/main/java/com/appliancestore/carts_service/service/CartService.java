@@ -124,7 +124,7 @@ public class CartService implements ICartService {
             totalPrice += item.getQuantity() * productPrice;
         }
         cartToEdit.setTotalPrice(totalPrice);
-        cartRepo.save(cartToEdit); // Save changes.
+        cartRepo.save(cartToEdit);
 
         // Map a cart to a CartResponseDTO
         return  aggregateCartToDTO(cartToEdit);
